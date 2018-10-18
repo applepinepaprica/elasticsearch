@@ -522,28 +522,6 @@ public class CompletionSuggestSearchIT extends ESIntegTestCase {
         assertSuggestions("b", "The Beatles");
     }
 
-    public void testThatSynonymsWork() throws Exception {
-        Settings.Builder settingsBuilder = Settings.builder()
-                .put("analysis.analyzer.suggest_analyzer_synonyms.type", "custom")
-                .put("analysis.analyzer.suggest_analyzer_synonyms.tokenizer", "standard")
-                .putList("analysis.analyzer.suggest_analyzer_synonyms.filter", "standard", "lowercase", "my_synonyms")
-                .put("analysis.filter.my_synonyms.type", "synonym")
-                .putList("analysis.filter.my_synonyms.synonyms", "foo,renamed");
-        completionMappingBuilder.searchAnalyzer("suggest_analyzer_synonyms").indexAnalyzer("suggest_analyzer_synonyms");
-        createIndexAndMappingAndSettings(settingsBuilder.build(), completionMappingBuilder);
-
-        client().prepareIndex(INDEX, TYPE, "1").setSource(jsonBuilder()
-                .startObject().startObject(FIELD)
-                .startArray("input").value("Foo Fighters").endArray()
-                .endObject().endObject()
-        ).get();
-
-        refresh();
-
-        // get suggestions for renamed
-        assertSuggestions("r", "Foo Fighters");
-    }
-
     public void testThatUpgradeToMultiFieldsWorks() throws Exception {
         final XContentBuilder mapping = jsonBuilder()
                 .startObject()
@@ -804,7 +782,7 @@ public class CompletionSuggestSearchIT extends ESIntegTestCase {
     public void testThatSuggestStopFilterWorks() throws Exception {
         Settings.Builder settingsBuilder = Settings.builder()
                 .put("index.analysis.analyzer.stoptest.tokenizer", "standard")
-                .putList("index.analysis.analyzer.stoptest.filter", "standard", "suggest_stop_filter")
+                .putList("index.analysis.analyzer.stoptest.filter", "suggest_stop_filter")
                 .put("index.analysis.filter.suggest_stop_filter.type", "stop")
                 .put("index.analysis.filter.suggest_stop_filter.remove_trailing", false);
 
